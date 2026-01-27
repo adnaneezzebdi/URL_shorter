@@ -1,10 +1,12 @@
-//Questo file definisce l’API gRPC per il servizio URL shortener
+//Questo file definisce l API gRPC per il servizio URL shortener
 //Service name: UrlShortenerService
 //RPC: CreateShortUrl, ResolveShortUrl, GetStats
 
 syntax = "proto3";
 
 package urlshortener.v1;
+
+option go_package = "urlShorter/proto";
 
 import "google/protobuf/timestamp.proto";
 
