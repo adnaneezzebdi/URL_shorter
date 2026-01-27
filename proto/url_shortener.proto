@@ -1,0 +1,48 @@
+//Questo file definisce l API gRPC per il servizio URL shortener
+//Service name: UrlShortenerService
+//RPC: CreateShortUrl, ResolveShortUrl, GetStats
+
+syntax = "proto3";
+
+package urlshortener.v1;
+
+option go_package = "urlShorter/proto";
+
+import "google/protobuf/timestamp.proto";
+
+service UrlShortenerService {
+    rpc CreateShortUrl (CreateShortUrlRequest) returns (CreateShortUrlResponse);    // Crea o restituisce uno short URL (idempotente)
+    rpc ResolveShortUrl (ResolveShortUrlRequest) returns (ResolveShortUrlResponse); // Risolve il codice in URL originale e incrementa il contatore
+    rpc GetStats (GetStatsRequest) returns (GetStatsResponse);  // Restituisce le statistiche per uno short URL
+}
+
+message CreateShortUrlRequest {
+    string original_url = 1;   //URL lunga da accorciare, deve iniziare con http/https.
+}
+
+message CreateShortUrlResponse {
+    string code = 1;
+    string short_url = 2;
+    string original_url = 3;
+    google.protobuf.Timestamp created_at = 4;  //data di creazione originale, non cambia in caso di idempotenza
+}
+
+message ResolveShortUrlRequest {
+    string code = 1;    //Codice corto da risolvere
+}
+
+message ResolveShortUrlResponse {
+    string original_url = 1; 
+}
+
+message GetStatsRequest {
+    string code = 1;
+}
+
+message GetStatsResponse {
+    string code = 1;
+    string original_url = 2;
+    int64 access_count = 3;
+    google.protobuf.Timestamp created_at = 4;
+    google.protobuf.Timestamp last_access_at = 5;
+}
