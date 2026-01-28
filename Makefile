@@ -1,5 +1,6 @@
 BINARY=url_shorter
 MIGRATIONS_DIR=./migrations
+VERSION=1
 
 ifeq ($(OS),Windows_NT)
 MIGRATE=.\tools\migrate.exe
@@ -33,4 +34,7 @@ migrate-status:
 
 migrate-create:
 	$(MIGRATE) create -ext sql -dir $(MIGRATIONS_DIR) -seq $(name)
+
+migrate-force:
+	$(MIGRATE) -path $(MIGRATIONS_DIR) -database "$(DB_DSN)" force $(VERSION)
 
