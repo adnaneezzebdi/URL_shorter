@@ -17,9 +17,11 @@ func NewRepo(db *sql.DB) *Repo {
 }
 
 var (
-	ErrCodeCollision = errors.New("short code collision")
-	ErrInvalidURL    = errors.New("original url cannot be empty")
-	ErrEmptyCode     = errors.New("code cannot be empty")
+	ErrCodeCollision   = errors.New("short code collision")
+	ErrInvalidURL      = errors.New("original url cannot be empty")
+	ErrEmptyCode       = errors.New("code cannot be empty")
+	ErrEmptyUrl        = errors.New("url cannot be empty")
+	ErrTooManyAttempts = errors.New("too many attempts to generate unique code")
 )
 
 func (r *Repo) InsertShortURL(code, originalURL string) (string, error) {
