@@ -37,6 +37,7 @@ func (s *ShortUrlService) CreateShortUrl(url string) (string, error) {
 	}
 
 	for attempt := 0; attempt < maxAttempts; attempt++ {
+		
 
 		raw := url + ":" + salt + ":" + strconv.Itoa(attempt)
 
