@@ -4,8 +4,7 @@ go 1.25.4
 
 require (
 	github.com/jxskiss/base62 v1.1.0
-	github.com/lib/pq v1.10.9
-	golang.org/x/crypto v0.47.0
+	github.com/lib/pq v1.11.1
 	google.golang.org/grpc v1.78.0
 	google.golang.org/protobuf v1.36.11
 )
