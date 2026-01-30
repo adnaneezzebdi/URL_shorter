@@ -1,12 +1,23 @@
 package services
 
 import (
+	"crypto/sha256"
+	"database/sql"
+	"errors"
 	"strconv"
 	"strings"
+	"time"
 
 	"urlShorter/internal/repositories"
 
 	"github.com/jxskiss/base62"
+)
+
+var (
+	ErrInvalidURL      = errors.New("original url is not valid or is empty")
+	ErrTooManyAttempts = errors.New("too many attempts to generate unique code")
+	ErrNotFound        = errors.New("no records returned from db")
+	ErrIncrementAccess = errors.New("failed to increment access counter")
 )
 
 const (
@@ -25,23 +36,23 @@ func NewShortUrlService(repo *repositories.Repo) *ShortUrlService {
 
 func (s *ShortUrlService) CreateShortUrl(url string) (string, error) {
 	if url == "" {
-		return "", repositories.ErrEmptyUrl
+		return "", ErrInvalidURL
 	}
 
 	if !strings.HasPrefix(url, "http://") && !strings.HasPrefix(url, "https://") {
-		return "", repositories.ErrInvalidURL
+		return "", ErrInvalidURL
 	}
 
 	if len(url) > 2048 {
-		return "", repositories.ErrInvalidURL
+		return "", ErrInvalidURL
 	}
 
 	for attempt := 0; attempt < maxAttempts; attempt++ {
-		
 
 		raw := url + ":" + salt + ":" + strconv.Itoa(attempt)
-
-		encoded := base62.EncodeToString([]byte(raw))
+		hash := sha256.New()
+		hash.Write([]byte(raw))
+		encoded := base62.EncodeToString(hash.Sum(nil))
 		if len(encoded) < codeLength {
 			continue
 		}
@@ -60,5 +71,28 @@ func (s *ShortUrlService) CreateShortUrl(url string) (string, error) {
 		return "", err
 	}
 
-	return "", repositories.ErrTooManyAttempts
+	return "", ErrTooManyAttempts
+}
+
+func (s *ShortUrlService) ResolveShortUrl(code string) (string, error) {
+
+	trimCode := strings.TrimSpace(code)
+	if trimCode == "" {
+		return "", ErrInvalidURL
+	}
+
+	res, err := s.repo.GetByCode(trimCode)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return "", ErrNotFound
+		} else {
+			return "", ErrInvalidURL
+		}
+	}
+
+	err = s.repo.IncrementAccess(trimCode, time.Now().UTC())
+	if err != nil {
+		return "", ErrIncrementAccess
+	}
+	return res.OriginalUrl, nil
 }
